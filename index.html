@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07040f">
+  <title>Cheeky Pete</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="phase-title">
+    <header id="hud">
+      <div class="hud-block hud-left">
+        <div class="hud-label">SCORE</div>
+        <div class="hud-value" id="score">0</div>
+      </div>
+      <div class="hud-center">
+        <h1 id="title">CHEEKY PETE</h1>
+        <div class="hud-sub"><span id="level" class="cyan">LV 1</span><span id="lives" aria-label="Lives"></span></div>
+        <div id="levelBar"><div id="levelFill"></div></div>
+      </div>
+      <div class="hud-block hud-right">
+        <div class="hud-label">COMBO</div>
+        <div class="hud-value" id="combo">&times;0</div>
+      </div>
+      <button id="pauseBtn" class="pixel-btn small" aria-label="Pause">II</button>
+    </header>
+
+    <main id="stage">
+      <section id="petePanel">
+        <div class="deco deco-a"></div>
+        <div class="deco deco-b"></div>
+        <div id="peteWrap">
+          <div id="bubble" class="bubble" aria-live="polite"><span id="bubbleText"></span></div>
+          <div id="peteReact">
+            <img id="pete" class="pete-img" src="assets/pete.png" alt="Pete, a ginger lad in a green hoodie, at his gaming desk" draggable="false">
+            <img id="peteCheer" class="pete-img" src="assets/pete-cheer.png" alt="" aria-hidden="true" draggable="false">
+          </div>
+        </div>
+      </section>
+
+      <section id="lanePanel">
+        <canvas id="lanes"></canvas>
+        <div id="touchPad"></div>
+      </section>
+    </main>
+
+    <!-- Title screen -->
+    <div id="titleScreen" class="overlay">
+      <div class="panel">
+        <h2 class="big pink">CHEEKY<br>PETE</h2>
+        <p class="sub">A neon rhythm-typing game</p>
+        <ol class="howto">
+          <li>Letters fall down the lanes.</li>
+          <li>Press the matching key as each tile hits the <span class="yellow">HIT ZONE</span>.</li>
+          <li class="touch-only">On a phone? Tap the big buttons.</li>
+          <li>Clear each level's tiles to level up. It gets faster!</li>
+          <li>Miss 5 times and it's game over!</li>
+        </ol>
+        <p class="best">BEST: <span id="titleBest">0</span></p>
+        <button id="startBtn" class="pixel-btn">PRESS SPACE / TAP TO START</button>
+        <p class="hint">P or Esc to pause</p>
+      </div>
+    </div>
+
+    <!-- Pause screen -->
+    <div id="pauseScreen" class="overlay">
+      <div class="panel">
+        <h2 class="big cyan">PAUSED</h2>
+        <button id="resumeBtn" class="pixel-btn">RESUME</button>
+        <button id="quitBtn" class="pixel-btn alt">QUIT TO TITLE</button>
+        <p class="hint">P or Esc to resume</p>
+      </div>
+    </div>
+
+    <!-- Game over screen -->
+    <div id="overScreen" class="overlay">
+      <div class="panel">
+        <h2 class="big pink">GAME OVER</h2>
+        <p class="final">SCORE <span id="finalScore" class="green">0</span></p>
+        <p class="final">LEVEL <span id="finalLevel" class="cyan">1</span></p>
+        <p class="final">BEST <span id="finalBest" class="yellow">0</span></p>
+        <p id="newBest" class="newbest">NEW BEST!</p>
+        <p class="stats" id="finalStats"></p>
+        <button id="restartBtn" class="pixel-btn">PLAY AGAIN</button>
+        <p class="hint">Press Enter or Space</p>
+      </div>
+    </div>
+
+    <div id="levelUp" class="levelup" aria-live="polite">
+      <div class="lu-top">LEVEL UP!</div>
+      <div class="lu-num" id="levelUpNum">LEVEL 2</div>
+      <div class="lu-keys" id="levelUpKeys"></div>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
