@@ -7,6 +7,7 @@ PORT = 8765
 URL = f'http://127.0.0.1:{PORT}/index.html'
 GOOD = ["I got it Chat", "I Love You Chat!", "Easy!"]
 MISS = ["Boo!", "Help Chat", "Too Fast"]
+FEVER = ["FEVER TIME!", "Chat, I'm on fire!"]
 results = []
 
 def check(name, cond, info=''):
@@ -25,7 +26,8 @@ def wait_tile_in_zone(page, timeout=8000):
     return sorted([t for t in s['tiles'] if not t['judged']], key=lambda t: -t['p'])[0]
 
 def run(device, p):
-    browser = p.chromium.launch()
+    exe = os.environ.get('CHROMIUM_PATH')
+    browser = p.chromium.launch(executable_path=exe) if exe else p.chromium.launch()
     if device == 'phone':
         ctx = browser.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
     else:
@@ -43,6 +45,13 @@ def run(device, p):
     pre = f'{SHOTS}/{device}-'
     s = snap(page)
     check(f'{device}: title screen shown', s['phase'] == 'title' and page.is_visible('#titleScreen'))
+    # Pete is drawn on a canvas and keeps moving (breathing, blinking, bobbing)
+    page.wait_for_function('CheekyPete.snapshot().pete.ready', timeout=5000)
+    frames = set()
+    for _ in range(6):
+        frames.add(page.evaluate("document.getElementById('peteCanvas').toDataURL().length + ':' + document.getElementById('peteCanvas').toDataURL().slice(-200)"))
+        page.wait_for_timeout(180)
+    check(f'{device}: Pete is animated (canvas changes over time)', len(frames) >= 3, f'{len(frames)} distinct frames')
     page.screenshot(path=pre + '1-title.png')
 
     if device == 'phone':
@@ -82,6 +91,9 @@ def run(device, p):
     check(f'{device}: correct presses in zone score', hits_ok, f"score={s['score']}")
     check(f'{device}: combo builds', combo_ok and s['maxCombo'] >= target - 0, f"maxCombo={s['maxCombo']} stats={s['stats']}")
     check(f'{device}: good bubble appeared (combo milestone)', good_shot)
+    chat_n = page.eval_on_selector_all('#chat li', 'ls => ls.length')
+    check(f'{device}: stream chat is talking, viewers counted', chat_n >= 2 and s['viewers'] > 0, f"chat={chat_n} viewers={s['viewers']}")
+    check(f'{device}: fever meter fills on hits', s['fever'] > 0 or s['feverActive'], f"fever={s['fever']:.2f}")
 
     # ---- level up
     page.wait_for_function('CheekyPete.snapshot().level === 2', timeout=8000)
@@ -147,7 +159,7 @@ def run(device, p):
     lines = page.evaluate('window.__lines')
     said = [l for l in lines if l[0]]
     dup = any(said[i][0] == said[i + 1][0] for i in range(len(said) - 1))
-    kinds_ok = all((k == 'good' and t in GOOD) or (k == 'miss' and t in MISS) for t, k in said)
+    kinds_ok = all((k == 'good' and t in GOOD) or (k == 'miss' and t in MISS) or (k == 'fever' and t in FEVER) for t, k in said)
     check(f'{device}: bubble lines right kind, never same line twice in a row', kinds_ok and not dup and len(said) >= 2, ' | '.join(t for t, k in said))
 
     # ---- restart
@@ -156,6 +168,18 @@ def run(device, p):
     page.wait_for_timeout(100)
     s = snap(page)
     check(f'{device}: restart works', s['phase'] == 'playing' and s['score'] == 0 and s['lives'] == 5 and s['level'] == 1)
+
+    # ---- a 4th lane joins at level 4
+    page.evaluate('CheekyPete.skipLevel(); CheekyPete.skipLevel(); CheekyPete.skipLevel()')
+    page.wait_for_timeout(100)
+    s = snap(page)
+    four_ok = s['level'] == 4 and s['lanes'] == 4 and len(s['letters']) == 4
+    if device == 'phone':
+        labels = page.eval_on_selector_all('.lane-btn', 'bs => bs.map(b => b.textContent)')
+        four_ok = four_ok and labels == s['letters']
+    check(f'{device}: level 4 adds a 4th lane', four_ok, str(s['letters']))
+    page.wait_for_timeout(300)
+    page.screenshot(path=pre + '6-four-lanes.png')
 
     # ---- best persists after reload
     best = int(stored)

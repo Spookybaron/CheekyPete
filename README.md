@@ -20,6 +20,17 @@ No installs, no build step: it's just `index.html`, `style.css`, `game.js` and a
   you lose a heart. Lose all 5 hearts and it's game over.
 - **Levels:** hit the number of tiles shown by the bar under the title to clear a
   level. You get a LEVEL UP bonus, a heart back, new letters, and it all gets faster.
+  From **level 4** a fourth lane joins in.
+- **Special tiles:**
+  - **Gold** tiles (level 2+) score ×3 and pump the fever meter.
+  - **Heart** tiles (level 3+) give you a life back.
+  - **Bombs** (level 4+): *don't* press them! Let them fall past for a small
+    DODGED bonus. Pressing one costs a heart and leaves Pete covered in soot.
+- **FEVER:** good hits fill the FEVER bar under the level bar. When it's full you get
+  8 seconds of double points, Pete puts his shades on and catches fire. A miss ends it.
+- **Pete's stream:** the LIVE box shows his viewer count (it climbs as you play well)
+  and a chat that reacts to everything you do.
+- **Game over** gives you a rank (S, A, B, C or D) from your accuracy, plus your stats.
 - **P** or **Esc** pauses. **M** mutes the sound.
 - **Phones/tablets:** big letter buttons appear under each lane. Just tap them.
 - Your best score is saved in the browser.
@@ -45,7 +56,8 @@ const CATCHPHRASES = {
 ```
 
 - `good` lines show on combo milestones, on level ups, and now and then on good hits.
-- `miss` lines show when you miss.
+- `miss` lines show when you miss (or hit a bomb).
+- `fever` lines show when FEVER mode starts.
 - To change a line, edit the `text`. To add one, copy a line and change it. Pete
   never says the same line twice in a row.
 
@@ -59,11 +71,34 @@ says that line. Any clip that isn't there yet is simply skipped.
 You can use any name or format browsers play (`.mp3`, `.ogg`, `.wav`, `.m4a`); just
 make the `audio:` path match. Use `audio: null` for a line with no sound.
 
+## Pete's animations
+
+Pete is drawn on a canvas from `assets/pete.png` and `assets/pete-cheer.png`. The game
+cuts the picture into layers when it loads, so he can:
+
+- breathe, bob his head and glance about while idle, and blink now and then
+- move his mouth while he talks (in time with the speech bubble)
+- tap the keyboard with each hand as you press keys
+- nod and grin on hits, squeeze his eyes shut and swear (`#@!`) on misses
+- sweat when you're down to your last two hearts
+- put on shades at a 25 combo, and catch fire during FEVER
+- get blown up by bombs (sooty face, shocked mouth, smoke)
+- jump up and cheer, with confetti, on a level up
+- slump under a rain cloud on game over
+
+If you redraw Pete, the coordinates of his head, eyes, mouth and hands are in the
+`ANIMATED PETE` section of `game.js`.
+
+## Changing the stream chat
+
+The `CHAT` block (just under the catchphrases in `game.js`) holds the chatter names and
+the messages they post for each kind of event (`good`, `miss`, `fever`, `bomb`...).
+
 ## Other tweaks
 
-The `CONFIG` block just below the catchphrases in `game.js` holds the number of
-lanes (3 or 4), lives, timing windows, points, and how each level's target, speed
-and spawn rate are worked out.
+The `CONFIG` block in `game.js` holds the number of lanes (and the level the 4th lane
+joins at), lives, timing windows, points, how often special tiles show up, how long
+FEVER lasts, and how each level's target, speed and spawn rate are worked out.
 
 ## Developer bits (optional)
 
@@ -72,3 +107,4 @@ and spawn rate are worked out.
   background and lines the two poses up so the swap looks clean.
 - `tools/test_game.py` is an automated browser test (needs Python + Playwright with
   Chromium). It plays the game on desktop and phone sizes and saves screenshots.
+  Set `CHROMIUM_PATH` if Playwright should use a particular Chromium binary.

@@ -7,6 +7,7 @@
   --yellow: #ffe14a;
   --purple: #8b3dff;
   --red: #ff3b3b;
+  --orange: #ff8a3d;
   --white: #f4f1ff;
   --font: 'Press Start 2P', ui-monospace, 'Courier New', monospace;
 }
@@ -45,6 +46,7 @@ html, body {
 
 .pink { color: var(--pink); } .cyan { color: var(--cyan); }
 .green { color: var(--green); } .yellow { color: var(--yellow); }
+.red { color: var(--red); } .orange { color: var(--orange); }
 
 /* ---------- HUD ---------- */
 #hud {
@@ -73,6 +75,14 @@ html, body {
 .heart.lost { background: #3a2346; filter: none; }
 #levelBar { width: 180px; height: 6px; background: #1d1430; outline: 2px solid #3a2a5c; }
 #levelFill { height: 100%; width: 0; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); transition: width .15s; }
+#feverBar { position: relative; width: 180px; height: 9px; background: #1d1430; outline: 2px solid #4a2a3c; }
+#feverFill { height: 100%; width: 0; background: linear-gradient(90deg, var(--pink), var(--orange)); box-shadow: 0 0 8px var(--orange); transition: width .12s; }
+#feverBar span { position: absolute; inset: 0; font-size: 6px; line-height: 9px; color: #fff; text-shadow: 0 0 3px #000, 1px 1px 0 #000; letter-spacing: 2px; }
+.fever #feverFill { background: linear-gradient(90deg, #ff2bd6, #ffe14a, #39ff6a, #22d3ff, #ff2bd6); background-size: 200% 100%; animation: rainbow .5s linear infinite; }
+.fever #feverBar { outline-color: var(--yellow); box-shadow: 0 0 12px var(--orange); }
+@keyframes rainbow { to { background-position: -200% 0; } }
+.fever #lanes { animation: feverPulse .27s ease-in-out infinite alternate; }
+@keyframes feverPulse { from { filter: saturate(1.1) brightness(1); } to { filter: saturate(1.5) brightness(1.18); } }
 
 #pauseBtn { position: absolute; right: 14px; top: 14px; }
 
@@ -85,7 +95,7 @@ html, body {
   padding: 0 1% 2%;
   min-width: 0; min-height: 0;
 }
-.deco { position: absolute; border: 3px solid; opacity: .35; border-radius: 2px; }
+.deco { display: none; position: absolute; border: 3px solid; opacity: .35; border-radius: 2px; }
 .deco-a { left: 4%; top: 12%; width: 16%; height: 26%; border-color: var(--pink); box-shadow: 0 0 12px var(--pink), inset 0 0 12px var(--pink); }
 .deco-b { left: 24%; top: 6%; width: 30%; height: 18%; border-color: var(--purple); box-shadow: 0 0 12px var(--purple); opacity: .25; }
 
@@ -96,6 +106,7 @@ html, body {
   animation: idleBob 2.2s ease-in-out infinite;
 }
 #peteReact { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.pete-src { display: none; }
 .pete-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   image-rendering: pixelated;
@@ -103,9 +114,6 @@ html, body {
   filter: drop-shadow(0 0 14px rgba(139, 61, 255, .35));
   transition: opacity .08s;
 }
-#peteCheer { opacity: 0; }
-#peteReact.cheer #pete { opacity: 0; }
-#peteReact.cheer #peteCheer { opacity: 1; }
 #peteReact.cheer { animation: cheerJump .5s ease-out 4; }
 #peteReact.happy { animation: happy .35s ease-out; }
 #peteReact.shake { animation: shake .4s linear; }
@@ -118,6 +126,32 @@ html, body {
   35% { transform: translateX(3%) rotate(1deg); } 55% { transform: translateX(-2%); } 75% { transform: translateX(2%); }
 }
 @keyframes cheerJump { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-4%) scale(1.02); } }
+
+/* ---------- Stream chat ---------- */
+#stream {
+  position: absolute; z-index: 4; left: 3%; top: 3%; width: 42%;
+  font-size: 9px; line-height: 1.6; pointer-events: none;
+}
+.live {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(14, 8, 30, .85); border: 2px solid var(--red);
+  padding: 5px 8px; color: #fff; box-shadow: 0 0 10px rgba(255, 59, 59, .45);
+}
+.live .dot { width: 8px; height: 8px; background: var(--red); box-shadow: 0 0 6px var(--red); animation: blink 1s steps(2) infinite; }
+.live .eye { color: #a99bd6; }
+#viewers { color: var(--yellow); }
+#chat {
+  list-style: none; margin: 8px 0 0; padding: 6px 8px;
+  background: rgba(14, 8, 30, .6); border-left: 3px solid var(--purple);
+  color: #e3dcff; min-height: 2em;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%);
+          mask-image: linear-gradient(to bottom, transparent, #000 35%);
+}
+#chat li { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; animation: chatIn .2s steps(3); }
+#chat b { font-weight: normal; }
+#chat .chat-miss, #chat .chat-bomb { color: #ff9aa8; }
+#chat .chat-fever { color: var(--yellow); }
+@keyframes chatIn { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* ---------- Speech bubble ---------- */
 .bubble {
@@ -219,6 +253,10 @@ html, body {
 .newbest { color: var(--green); font-size: 16px; text-shadow: 0 0 10px var(--green); visibility: hidden; animation: blink .6s steps(2) infinite; }
 .newbest.on { visibility: visible; }
 .stats { font-size: 9px; color: #a99bd6; line-height: 1.8; }
+.rank { font-size: 15px; margin: 0 0 8px; color: #d9d2ff; }
+#finalRank { font-size: 30px; vertical-align: middle; color: var(--yellow); text-shadow: 0 0 10px var(--yellow), 3px 3px 0 #6b4c00; }
+#finalRank[data-rank="S"] { color: var(--pink); text-shadow: 0 0 12px var(--pink), 3px 3px 0 #5a0a4b; }
+#finalRank[data-rank="D"] { color: #a99bd6; text-shadow: none; }
 .hint { font-size: 9px; color: #8f82b8; margin: 12px 0 0; }
 @keyframes blink { 50% { opacity: .2; } }
 
@@ -256,9 +294,15 @@ html, body {
   .hud-sub { font-size: 9px; gap: 10px; }
   .heart { width: 11px; height: 9px; }
   #levelBar { width: 120px; height: 5px; }
+  #feverBar { width: 120px; height: 7px; }
+  #feverBar span { font-size: 5px; line-height: 7px; }
+  #stream { left: auto; right: 2%; top: 40px; width: 34%; font-size: 7px; text-align: right; }
+  .live { padding: 3px 5px; gap: 4px; }
+  #chat { text-align: left; margin-top: 4px; padding: 3px 5px; }
+  #chat li:nth-last-child(n+4) { display: none; }
   #stage { flex-direction: column; }
   #petePanel { flex: 0 0 29%; padding: 0 0 4px; justify-content: flex-start; padding-left: 4%; }
-  #peteWrap { height: 100%; width: auto; }
+  #peteWrap { height: 100%; width: auto; z-index: 5; }
   .bubble { left: 64%; top: 6%; font-size: 10px; padding: 8px 9px; white-space: normal; width: max-content; max-width: 138px; }
   .cheering .bubble { left: 66%; top: 24%; }
   .deco { display: none; }
