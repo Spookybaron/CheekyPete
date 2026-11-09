@@ -61,7 +61,7 @@
   const el = {
     score: $('score'), combo: $('combo'), lives: $('lives'), level: $('level'),
     levelFill: $('levelFill'), bubble: $('bubble'), bubbleText: $('bubbleText'),
-    peteReact: $('peteReact'), touchPad: $('touchPad'),
+    peteReact: $('peteReact'), peteWrap: $('peteWrap'), touchPad: $('touchPad'),
     titleBest: $('titleBest'), finalScore: $('finalScore'), finalBest: $('finalBest'),
     finalLevel: $('finalLevel'), finalStats: $('finalStats'), newBest: $('newBest'),
     levelUp: $('levelUp'), levelUpNum: $('levelUpNum'), levelUpKeys: $('levelUpKeys'),
@@ -172,8 +172,12 @@
     const r = el.peteReact;
     r.classList.remove('happy', 'shake');
     r.classList.add('cheer');
-    $('peteWrap').classList.add('cheering');
+    el.peteWrap.classList.add('cheering');
     cheerTimer = seconds;
+  }
+  function stopCheer() {
+    el.peteReact.classList.remove('cheer');
+    el.peteWrap.classList.remove('cheering');
   }
 
   /* ---------------- Lanes / letters ---------------- */
@@ -232,8 +236,8 @@
     S.letters = pickLetters(1);
     updateTouchLabels();
     hideBubble(true);
-    el.peteReact.classList.remove('cheer', 'happy', 'shake');
-    $('peteWrap').classList.remove('cheering');
+    el.peteReact.classList.remove('happy', 'shake');
+    stopCheer();
     cheerTimer = 0; lastLine = null;
     setPhase('playing');
     updateHud();
@@ -248,6 +252,11 @@
   function togglePause() {
     if (S.phase === 'playing') setPhase('paused');
     else if (S.phase === 'paused') { setPhase('playing'); last = performance.now(); }
+  }
+
+  // Ignore restart presses for a moment so a panicked key-mash doesn't skip the results screen
+  function canRestart() {
+    return S.phase === 'over' && performance.now() - S.overAt > 600;
   }
 
   function gameOver() {
@@ -418,7 +427,7 @@
   function tickUi(dt) {
     if (bubbleTimer > 0) { bubbleTimer -= dt; if (bubbleTimer <= 0) hideBubble(); }
     if (reactTimer > 0) { reactTimer -= dt; if (reactTimer <= 0) el.peteReact.classList.remove('happy', 'shake'); }
-    if (cheerTimer > 0) { cheerTimer -= dt; if (cheerTimer <= 0) { el.peteReact.classList.remove('cheer'); $('peteWrap').classList.remove('cheering'); } }
+    if (cheerTimer > 0) { cheerTimer -= dt; if (cheerTimer <= 0) stopCheer(); }
     for (const e of S.effects) e.t += dt;
     S.effects = S.effects.filter((e) => e.t < e.life);
   }
@@ -474,7 +483,7 @@
     // lane lines (neon)
     ctx.lineWidth = 3;
     for (let e = 0; e <= n; e++) {
-      const c = CONFIG.laneColors[Math.min(n - 1, Math.max(0, e === n ? n - 1 : e))];
+      const c = CONFIG.laneColors[Math.min(e, n - 1)]; // right-most edge reuses the last lane's colour
       ctx.strokeStyle = c; ctx.shadowColor = c; ctx.shadowBlur = 12;
       ctx.globalAlpha = (e === 0 || e === n) ? 0.95 : 0.55;
       ctx.beginPath(); ctx.moveTo(edgeX(g, e, 0), 0); ctx.lineTo(edgeX(g, e, 1), H); ctx.stroke();
@@ -585,7 +594,7 @@
       e.preventDefault();
       if (e.repeat) return;
       if (S.phase === 'title') startGame();
-      else if (S.phase === 'over' && performance.now() - S.overAt > 600) startGame();
+      else if (canRestart()) startGame();
       else if (S.phase === 'paused') togglePause();
       return;
     }
@@ -596,7 +605,7 @@
   });
 
   $('startBtn').addEventListener('click', () => { if (S.phase === 'title') startGame(); });
-  $('restartBtn').addEventListener('click', () => { if (S.phase === 'over' && performance.now() - S.overAt > 600) startGame(); });
+  $('restartBtn').addEventListener('click', () => { if (canRestart()) startGame(); });
   $('resumeBtn').addEventListener('click', togglePause);
   $('quitBtn').addEventListener('click', () => { S.tiles = []; hideBubble(true); setPhase('title'); });
   $('pauseBtn').addEventListener('click', togglePause);
