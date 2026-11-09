@@ -21,6 +21,7 @@
         <h1 id="title">CHEEKY PETE</h1>
         <div class="hud-sub"><span id="level" class="cyan">LV 1</span><span id="lives" aria-label="Lives"></span></div>
         <div id="levelBar"><div id="levelFill"></div></div>
+        <div id="feverBar" title="Fever meter"><div id="feverFill"></div><span>FEVER</span></div>
       </div>
       <div class="hud-block hud-right">
         <div class="hud-label">COMBO</div>
@@ -33,11 +34,16 @@
       <section id="petePanel">
         <div class="deco deco-a"></div>
         <div class="deco deco-b"></div>
+        <div id="stream">
+          <div class="live"><span class="dot"></span>LIVE <span class="eye">&#9673;</span> <span id="viewers">37</span></div>
+          <ul id="chat" aria-hidden="true"></ul>
+        </div>
         <div id="peteWrap">
           <div id="bubble" class="bubble" aria-live="polite"><span id="bubbleText"></span></div>
           <div id="peteReact">
-            <img id="pete" class="pete-img" src="assets/pete.png" alt="Pete, a ginger lad in a green hoodie, at his gaming desk" draggable="false">
-            <img id="peteCheer" class="pete-img" src="assets/pete-cheer.png" alt="" aria-hidden="true" draggable="false">
+            <canvas id="peteCanvas" class="pete-img" role="img" aria-label="Pete, a ginger lad in a green hoodie, at his gaming desk"></canvas>
+            <img id="pete" class="pete-src" src="assets/pete.png" alt="" aria-hidden="true" draggable="false">
+            <img id="peteCheer" class="pete-src" src="assets/pete-cheer.png" alt="" aria-hidden="true" draggable="false">
           </div>
         </div>
       </section>
@@ -58,6 +64,9 @@
           <li>Press the matching key as each tile hits the <span class="yellow">HIT ZONE</span>.</li>
           <li class="touch-only">On a phone? Tap the big buttons.</li>
           <li>Clear each level's tiles to level up. It gets faster!</li>
+          <li><span class="yellow">GOLD</span> tiles score x3. <span class="pink">HEART</span> tiles give a life back.</li>
+          <li><span class="red">BOMBS</span>: don't press them, let them fall!</li>
+          <li>Fill the <span class="orange">FEVER</span> bar for double points.</li>
           <li>Miss 5 times and it's game over!</li>
         </ol>
         <p class="best">BEST: <span id="titleBest">0</span></p>
@@ -80,6 +89,7 @@
     <div id="overScreen" class="overlay">
       <div class="panel">
         <h2 class="big pink">GAME OVER</h2>
+        <p class="rank">RANK <span id="finalRank">-</span></p>
         <p class="final">SCORE <span id="finalScore" class="green">0</span></p>
         <p class="final">LEVEL <span id="finalLevel" class="cyan">1</span></p>
         <p class="final">BEST <span id="finalBest" class="yellow">0</span></p>
